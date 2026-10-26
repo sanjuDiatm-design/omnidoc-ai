@@ -85,8 +85,9 @@ export default function DocumentViewer({ session, isUploading, onFileUpload, onR
     );
   }
 
-  const isPdf = session.mime_type.includes('pdf');
-  const fileUrl = `/api/file/${session.session_id}`;
+  const isPdf = session.mime_type?.includes('pdf');
+  const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+  const fileUrl = session.local_url || (apiBase ? `${apiBase}/api/file/${session.session_id}` : `/api/file/${session.session_id}`);
 
   return (
     <div className="viewer-panel">

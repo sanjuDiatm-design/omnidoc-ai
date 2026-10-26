@@ -64,6 +64,9 @@ export default function App() {
   }, []);
 
   const resetSession = () => {
+    if (session?.local_url) {
+      try { URL.revokeObjectURL(session.local_url); } catch (_) {}
+    }
     setSession(null);
     setChatMessages([]);
     setExtractedData(null);
@@ -73,6 +76,8 @@ export default function App() {
   // Upload file to backend
   const handleFileUpload = async (file) => {
     setIsUploading(true);
+    // Instant local blob URL so document renders immediately with 0 latency & no 404s
+    const localUrl = URL.createObjectURL(file);
     const formData = new FormData();
     formData.append('file', file);
 
@@ -87,12 +92,13 @@ export default function App() {
       }
 
       const data = await response.json();
-      setSession(data);
+      setSession({ ...data, local_url: localUrl });
       setExtractedData(null);
       setChatMessages([]);
       setActiveTab('overview');
       showToast('Document analyzed successfully!');
     } catch (err) {
+      URL.revokeObjectURL(localUrl);
       showToast(err.message || 'Upload failed', 'error');
     } finally {
       setIsUploading(false);
