@@ -43,11 +43,17 @@ export default function App() {
 
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
+  const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
   const apiFetch = async (path, options = {}) => {
+    const url = API_BASE ? `${API_BASE}${path}` : path;
     try {
-      return await fetch(path, options);
+      return await fetch(url, options);
     } catch (err) {
-      return await fetch(`http://127.0.0.1:8000${path}`, options);
+      if (!API_BASE) {
+        return await fetch(`http://127.0.0.1:8000${path}`, options);
+      }
+      throw err;
     }
   };
 

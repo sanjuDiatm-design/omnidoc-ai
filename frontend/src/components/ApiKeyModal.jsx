@@ -16,19 +16,25 @@ export default function ApiKeyModal({ isOpen, onClose, currentKey, onSaveKey }) 
     setTesting(true);
     setTestResult(null);
     try {
+      const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      const endpoint = apiBase ? `${apiBase}/api/verify-key` : '/api/verify-key';
       let res;
       try {
-        res = await fetch('/api/verify-key', {
+        res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ api_key: keyInput.trim() })
         });
       } catch (err) {
-        res = await fetch('http://127.0.0.1:8000/api/verify-key', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ api_key: keyInput.trim() })
-        });
+        if (!apiBase) {
+          res = await fetch('http://127.0.0.1:8000/api/verify-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: keyInput.trim() })
+          });
+        } else {
+          throw err;
+        }
       }
       const data = await res.json();
       setTestResult(data);
